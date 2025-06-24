@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Task Scheduler</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .slider-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .slider-item {
+            flex: 1;
+        }
+        
+        .slider-item input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .slider-value {
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-complete {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+        
+        .task-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .task-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .task-item.completed {
+            opacity: 0.7;
+            border-left-color: #4CAF50;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .task-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .task-meta span {
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .energy-indicator {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        
+        .energy-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+        
+        .energy-dot.active {
+            background: #667eea;
+        }
+        
+        .energy-logger {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .schedule-time {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 80px;
+        }
+        
+        .schedule-task {
+            flex: 1;
+            margin-left: 15px;
+        }
+        
+        .prediction-chart {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .prediction-bar {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .prediction-value {
+            height: 100px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 4px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .prediction-time {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .slider-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const API_BASE = 'http://localhost:5000/api';
+
+        function App() {
+            const [tasks, setTasks] = useState([]);
+            const [schedule, setSchedule] = useState([]);
+            const [energyPredictions, setEnergyPredictions] = useState([]);
+            const [currentEnergy, setCurrentEnergy] = useState(3);
+            
+            // Form state
+            const [newTask, setNewTask] = useState({
+                title: '',
+                description: '',
+                difficulty: 3,
+                importance: 3,
+                estimated_duration: 60,
+                energy_required: 3
+            });
+
+            // Fetch data
+            const fetchTasks = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/tasks`);
+                    const data = await response.json();
+                    setTasks(data);
+                } catch (error) {
+                    console.error('Error fetching tasks:', error);
+                }
+            };
+
+            const fetchSchedule = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/schedule`);
+                    const data = await response.json();
+                    setSchedule(data);
+                } catch (error) {
+                    console.error('Error fetching schedule:', error);
+                }
+            };
+
+            const fetchEnergyPredictions = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/energy/predict`);
+                    const data = await response.json();
+                    setEnergyPredictions(data);
+                } catch (error) {
+                    console.error('Error fetching energy predictions:', error);
+                }
+            };
+
+            // Initial data load
+            useEffect(() => {
+                fetchTasks();
+                fetchSchedule();
+                fetchEnergyPredictions();
+            }, []);
+
+            // Create new task
+            const handleCreateTask = async (e) => {
+                e.preventDefault();
+                try {
+                    const response = await fetch(`${API_BASE}/tasks`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(newTask),
+                    });
+                    
+                    if (response.ok) {
+                        setNewTask({
+                            title: '',
+                            description: '',
+                            difficulty: 3,
+                            importance: 3,
+                            estimated_duration: 60,
+                            energy_required: 3
+                        });
+                        fetchTasks();
+                        fetchSchedule();
+                    }
+                } catch (error) {
+                    console.error('Error creating task:', error);
+                }
+            };
+
+            // Complete task
+            const handleCompleteTask = async (taskId) => {
+                try {
+                    const response = await fetch(`${API_BASE}/tasks/${taskId}/complete`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            energy_level: currentEnergy,
+                            actual_duration: 60 // Default, in real app would track actual time
+                        }),
+                    });
+                    
+                    if (response.ok) {
+                        fetchTasks();
+                        fetchSchedule();
+                        fetchEnergyPredictions();
+                    }
+                } catch (error) {
+                    console.error('Error completing task:', error);
+                }
+            };
+
+            // Log energy
+            const handleLogEnergy = async () => {
+                try {
+                    await fetch(`${API_BASE}/energy/log`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            energy_level: currentEnergy
+                        }),
+                    });
+                    fetchEnergyPredictions();
+                } catch (error) {
+                    console.error('Error logging energy:', error);
+                }
+            };
+
+            // Reschedule tasks
+            const handleReschedule = async () => {
+                try {
+                    await fetch(`${API_BASE}/reschedule`, {
+                        method: 'POST',
+                    });
+                    fetchSchedule();
+                } catch (error) {
+                    console.error('Error rescheduling:', error);
+                }
+            };
+
+            const EnergyIndicator = ({ level, maxLevel = 5 }) => (
+                <div className="energy-indicator">
+                    {Array.from({ length: maxLevel }, (_, i) => (
+                        <div 
+                            key={i} 
+                            className={`energy-dot ${i < level ? 'active' : ''}`}
+                        />
+                    ))}
+                </div>
+            );
+
+            const formatTime = (dateString) => {
+                return new Date(dateString).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>🧠 Smart Task Scheduler</h1>
+                        <p>AI-powered task scheduling based on your energy patterns</p>
+                    </div>
+
+                    <div className="dashboard">
+                        {/* Create Task Form */}
+                        <div className="card">
+                            <h2>📝 Create New Task</h2>
+                            <form onSubmit={handleCreateTask}>
+                                <div className="form-group">
+                                    <label>Task Title</label>
+                                    <input
+                                        type="text"
+                                        value={newTask.title}
+                                        onChange={(e) => setNewTask({...newTask, title: e.target.value})}
+                                        placeholder="Enter task title..."
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Description</label>
+                                    <textarea
+                                        value={newTask.description}
+                                        onChange={(e) => setNewTask({...newTask, description: e.target.value})}
+                                        placeholder="Task description..."
+                                        rows="3"
+                                    />
+                                </div>
+                                
+                                <div className="slider-group">
+                                    <div className="slider-item">
+                                        <label>Difficulty</label>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            value={newTask.difficulty}
+                                            onChange={(e) => setNewTask({...newTask, difficulty: parseInt(e.target.value)})}
+                                        />
+                                        <div className="slider-value">{newTask.difficulty}/5</div>
+                                    </div>
+                                    
+                                    <div className="slider-item">
+                                        <label>Importance</label>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            value={newTask.importance}
+                                            onChange={(e) => setNewTask({...newTask, importance: parseInt(e.target.value)})}
+                                        />
+                                        <div className="slider-value">{newTask.importance}/5</div>
+                                    </div>
+                                </div>
+                                
+                                <div className="slider-group">
+                                    <div className="slider-item">
+                                        <label>Duration (minutes)</label>
+                                        <input
+                                            type="number"
+                                            value={newTask.estimated_duration}
+                                            onChange={(e) => setNewTask({...newTask, estimated_duration: parseInt(e.target.value)})}
+                                            min="15"
+                                            max="480"
+                                        />
+                                    </div>
+                                    
+                                    <div className="slider-item">
+                                        <label>Energy Required</label>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="5"
+                                            value={newTask.energy_required}
+                                            onChange={(e) => setNewTask({...newTask, energy_required: parseInt(e.target.value)})}
+                                        />
+                                        <div className="slider-value">{newTask.energy_required}/5</div>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" className="btn">Create Task</button>
+                            </form>
+                        </div>
+
+                        {/* Energy Logger */}
+                        <div className="card">
+                            <h2>⚡ Energy Tracker</h2>
+                            <div className="energy-logger">
+                                <label>Current Energy Level</label>
+                                <input
+                                    type="range"
+                                    min="1"
+                                    max="5"
+                                    value={currentEnergy}
+                                    onChange={(e) => setCurrentEnergy(parseInt(e.target.value))}
+                                />
+                                <div className="slider-value">{currentEnergy}/5</div>
+                                <EnergyIndicator level={currentEnergy} />
+                                <button onClick={handleLogEnergy} className="btn btn-small">
+                                    Log Energy Level
+                                </button>
+                            </div>
+                            
+                            {/* Energy Predictions */}
+                            <h3>🔮 Energy Predictions (Next 8 Hours)</h3>
+                            <div className="prediction-chart">
+                                {energyPredictions.map((prediction, index) => (
+                                    <div key={index} className="prediction-bar">
+                                        <div 
+                                            className="prediction-value"
+                                            style={{height: `${prediction.predicted_energy * 20}px`}}
+                                        >
+                                            {prediction.predicted_energy}
+                                        </div>
+                                        <div className="prediction-time">
+                                            {formatTime(prediction.time)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="dashboard">
+                        {/* Today's Schedule */}
+                        <div className="card">
+                            <h2>📅 Today's Schedule</h2>
+                            <button onClick={handleReschedule} className="btn btn-small" style={{marginBottom: '15px'}}>
+                                🔄 Reschedule Tasks
+                            </button>
+                            
+                            {schedule.length === 0 ? (
+                                <p>No tasks scheduled for today. Create some tasks!</p>
+                            ) : (
+                                schedule.map(task => (
+                                    <div key={task.id} className="schedule-item">
+                                        <div className="schedule-time">
+                                            {formatTime(task.scheduled_time)}
+                                        </div>
+                                        <div className="schedule-task">
+                                            <div className="task-title">{task.title}</div>
+                                            <div className="task-meta">
+                                                <span>⏱️ {task.estimated_duration}min</span>
+                                                <span>⚡ {task.energy_required}/5</span>
+                                                <span>🔥 {task.difficulty}/5</span>
+                                                <span>⭐ {task.importance}/5</span>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleCompleteTask(task.id)}
+                                            className="btn btn-complete btn-small"
+                                        >
+                                            Complete
+                                        </button>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* All Tasks */}
+                        <div className="card">
+                            <h2>📋 All Tasks</h2>
+                            <div className="task-list">
+                                {tasks.length === 0 ? (
+                                    <p>No tasks yet. Create your first task!</p>
+                                ) : (
+                                    tasks.map(task => (
+                                        <div 
+                                            key={task.id} 
+                                            className={`task-item ${task.is_completed ? 'completed' : ''}`}
+                                        >
+                                            <div className="task-header">
+                                                <div className="task-title">
+                                                    {task.is_completed ? '✅ ' : ''}{task.title}
+                                                </div>
+                                                {!task.is_completed && (
+                                                    <button 
+                                                        onClick={() => handleCompleteTask(task.id)}
+                                                        className="btn btn-complete btn-small"
+                                                    >
+                                                        Complete
+                                                    </button>
+                                                )}
+                                            </div>
+                                            
+                                            {task.description && (
+                                                <p style={{color: '#666', marginBottom: '10px'}}>
+                                                    {task.description}
+                                                </p>
+                                            )}
+                                            
+                                            <div className="task-meta">
+                                                <span>⏱️ {task.estimated_duration}min</span>
+                                                <span>🔥 Difficulty: {task.difficulty}/5</span>
+                                                <span>⭐ Importance: {task.importance}/5</span>
+                                                <span>⚡ Energy: {task.energy_required}/5</span>
+                                                {task.scheduled_time && (
+                                                    <span>🕐 Scheduled: {formatTime(task.scheduled_time)}</span>
+                                                )}
+                                            </div>
+                                            
+                                            <EnergyIndicator level={task.energy_required} />
+                                            
+                                            {task.is_completed && task.completed_time && (
+                                                <div style={{color: '#4CAF50', fontSize: '12px', marginTop: '5px'}}>
+                                                    Completed: {new Date(task.completed_time).toLocaleString()}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

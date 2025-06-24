@@ -24,9 +24,6 @@ numpy==1.24.3
 pandas==2.0.3
 scikit-learn==1.3.0
 
-bash
-Copy
-Edit
 
 ### System Requirements
 - Python 3.8+  
@@ -56,16 +53,10 @@ pip install Flask==2.3.3 Flask-SQLAlchemy==3.0.5 Flask-CORS==4.0.0 tensorflow==2
 # Run backend
 python app.py
 2. Frontend Setup
-bash
-Copy
-Edit
 # Copy the frontend code into index.html
 
 # Simply open index.html in your browser
 File Structure
-bash
-Copy
-Edit
 smart-task-scheduler/
 ├── app.py                 # Backend Flask application
 ├── index.html            # Frontend React application

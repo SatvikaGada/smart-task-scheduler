@@ -129,10 +129,6 @@ Training: MSE loss with Adam optimizer
 
 2. Task Scheduling Algorithm
 Priority scoring formula:
-
-ini
-Copy
-Edit
 priority = (importance * 0.4 + difficulty_factor * 0.2) * energy_match_factor
 Energy matching:
 
